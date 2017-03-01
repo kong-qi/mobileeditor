@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" class="html100">
+
+<head>
+    <meta charset="UTF-8">
+    <title>artEditor</title>
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+    <!-- 强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览 -->
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width, minimal-ui">
+    <!-- iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="biaoqing/css/jquery.mCustomScrollbar.min.css" />
+    <!--the css for this plugin-->
+    <link rel="stylesheet" href="biaoqing/css/jquery.emoji.css" />
+</head>
+
+<body>
+    <div style="width:100%;margin: 0 auto;">
+        <div class="publish-article-title">
+            <div class="title-tips">标题</div>
+            <input type="text" id="title" class="w100" placeholder="文章标题">
+        </div>
+        <div class="publish-article-content">
+            <div class="title-tips">正文</div>
+            <input type="hidden" id="target">
+            <div class="article-content" id="content">
+            </div>
+            <div class="footer-btn g-image-upload-box">
+                <div class="pull-left">
+                    <img src="images/ico.png" height="20" class="biaoqing" alt="">
+                </div>
+                <div class="pull-left upload-box">
+                    <span class="upload"><i class="upload-img"></i>插入图片</span>
+                    <input id="imageUpload" type="file" name="fileInput" capture="camera" accept="image/*" style="position: absolute; left: 0; opacity: 0; width: 100%;top:0">
+                </div>
+                <div class="cl"></div>
+            </div>
+        </div>
+        <div class="btn-check">
+            <a href="javascript:void(0)" class="submit_btn">提交</a>
+        </div>
+    </div>
+    <script src="js/jquery-1.11.2.js"></script>
+    <script src="js/layer/layer.js"></script>
+   
+    <script src="js/mobileEditor.js"></script>
+    <script src="js/index.js"></script>
+    <script src="biaoqing/js/jquery.mousewheel-3.0.6.min.js"></script>
+    <script src="biaoqing/js/jquery.mCustomScrollbar.min.js"></script>
+    <script src="biaoqing/js/jquery.emoji.js"></script>
+     <script>
+        
+    </script>
+    <script>
+
+   
+    function layer_msg(str){
+          layer.msg('正在上传中',{shade:0.5});
+    }
+    function layer_close(){
+        layer.closeAll();
+    }
+    $(function() {
+        //设置content大小
+        cont_h=$(window).height();
+        top_title=$(".publish-article-title").height();
+        cont_h=parseInt(cont_h)-parseInt(top_title)-200;
+        
+        $("#content").css({
+            'height':cont_h
+        })
+        $('#content').artEditor({
+            imgTar: '#imageUpload',
+            limitSize: 5, // 兆
+            showServer: true,
+            uploadUrl: 'server/server.php',
+            data: {},
+            uploadField: 'image',
+            placeholader: '<p>请输入文章正文内容</p>',
+            validHtml: ["<br/>"],
+            formInputId: 'target',
+            uploadSuccess: function(res) {
+                // 这里是处理返回数据业务逻辑的地方
+                // `res`为服务器返回`status==200`的`response`
+                // 如果这里`return <path>`将会以`<img src='path'>`的形式插入到页面
+                // 如果发现`res`不符合业务逻辑
+                // 比如后台告诉你这张图片不对劲
+                // 麻烦返回 `false`
+                // 当然如果`showServer==false`
+                // 无所谓咯
+                var result = JSON.parse(res)
+                if (result['code'] == '100') {
+                    return result['data']['url'];
+                } else {
+                    switch (result['code']) {
+                        case '101':
+                            {
+                                alert('图片太大之类的')
+                            }
+                            break;
+                        case '102':
+                            {
+                                alert('不支持这个文件')
+                            }
+                            break;
+                    }
+                }
+                return false;
+            },
+            uploadError: function(status, error) {
+                //这里做上传失败的操作
+                //也就是http返回码非200的时候
+                alert('网络异常' + status)
+            }
+        });
+    });
+
+    $(".submit_btn").click(function() {
+        title=$("#title").val();
+        html = $('#content').getValue();
+        if(title=='')
+        {
+            alert('标题不能为空');
+            return false;
+        }
+        if(html=='')
+        {
+            alert('内容不能为空');
+            return false;
+        }
+        alert(html);
+
+    });
+    $("#content").emoji({
+        button: ".biaoqing",
+        showTab: false,
+        animation: 'slide',
+        icons: [{
+            name: "QQ表情",
+            path: "biaoqing/img/qq/",
+            maxNum: 91,
+            excludeNums: [41, 45, 54],
+            file: ".gif"
+        }, {
+            name: "贴吧",
+            path: "biaoqing/img/tieba/",
+            maxNum: 50,
+            excludeNums: [41, 45, 54],
+            file: ".jpg"
+        }]
+    });
+    </script>
+</body>
+
+</html>
